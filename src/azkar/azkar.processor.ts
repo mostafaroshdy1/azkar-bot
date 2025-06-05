@@ -1,35 +1,36 @@
-import { Processor } from '@nestjs/bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { Telegraf } from 'telegraf';
+import { azkar } from './azkar';
+import { AzkarService } from './azkar.service';
 
-const bot = new Telegraf(process.env.BOT_TOKEN!);
+@Processor('azkar', {
+  concurrency: 20,
+  limiter: { max: 30, duration: 1000 * 30 },
+})
+export class AzkarProcessor extends WorkerHost {
+  constructor(private readonly azkarService: AzkarService) {
+    super();
+  }
+  process(job: Job) {
+    return this.handleAzkarJob(job.repeatJobKey as string);
+  }
 
-@Processor('azkar')
-export class AzkarProcessor {
-  async handleAzkarJob(job: Job<{ userId: number }>) {
-    const { userId } = job.data;
-    const azkar = getRandomAzkar();
-
-    if (!azkar) {
-      console.warn(`No Azkar found for user ${userId}`);
-      return;
-    }
+  async handleAzkarJob(userId: string): Promise<void> {
+    const azkar = this.getRandomAzkar();
 
     try {
-      await bot.telegram.sendMessage(userId, azkar);
+      await this.azkarService.bot.telegram.sendMessage(userId, azkar);
     } catch (err: any) {
-      console.error(`Failed to send Azkar to ${userId}:`, err?.message);
+      console.error(`Failed to send Azkar to ${userId}:`, err);
 
       // Optional: remove user from DB if they blocked the bot
-      if (
-        err?.response?.error_code === 403 &&
-        err?.response?.description?.includes('bot was blocked by the user')
-      ) {
-        console.log(
-          `User ${userId} blocked the bot. You may want to remove them.`,
-        );
-        // db.run("DELETE FROM users WHERE id = ?", [userId]); // if using sqlite like your original code
+      if (err?.response?.error_code === 403) {
+        await this.azkarService.cancelUserSchedule(userId);
       }
     }
+  }
+
+  getRandomAzkar(): string {
+    return azkar[Math.floor(Math.random() * azkar.length)];
   }
 }

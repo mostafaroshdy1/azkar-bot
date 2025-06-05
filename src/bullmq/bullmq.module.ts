@@ -13,6 +13,7 @@ import { BullModule } from '@nestjs/bullmq';
         removeOnComplete: true,
         removeOnFail: true,
         attempts: 1,
+        timestamp: Date.now(),
       },
     }),
   ],
