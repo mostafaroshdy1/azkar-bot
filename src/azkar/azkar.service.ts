@@ -43,9 +43,11 @@ export class AzkarService implements OnModuleInit {
 
     this.bot.command('set', async (ctx) => {
       const parts = ctx.message.text.split(' ');
-      const minutes = parseInt(parts[1], 10);
-      if (isNaN(minutes) || minutes < 1) {
-        return ctx.reply('❌ الرجاء إدخال عدد دقائق صالح. مثال: set 15/');
+      const minutes = parseFloat(parts[1]);
+      if (isNaN(minutes) || minutes < 5) {
+        return ctx.reply(
+          '❌ الرجاء إدخال عدد دقائق صالح (5 دقائق على الأقل). مثال: set 15/',
+        );
       }
       const durationInMs = minutes * 60 * 1000;
       const userId = ctx.from.id;
