@@ -10,7 +10,6 @@ export class AzkarService implements OnModuleInit {
   public readonly bot: Telegraf = new Telegraf(process.env.BOT_TOKEN!);
 
   async onModuleInit() {
-    console.log('AzkarService initialized', process.env.BOT_TOKEN);
     await this.bot.telegram.setMyCommands([
       {
         command: 'start',
