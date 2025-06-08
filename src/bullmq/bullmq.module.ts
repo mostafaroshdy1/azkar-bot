@@ -10,10 +10,11 @@ import { BullModule } from '@nestjs/bullmq';
         port: 6379,
       },
       defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true,
+        removeOnComplete: 1000,
+        removeOnFail: 1000,
         attempts: 1,
         timestamp: Date.now(),
+        keepLogs: 1000,
       },
     }),
   ],
