@@ -12,17 +12,21 @@ export class AzkarService implements OnModuleInit {
   public readonly bot: Telegraf = new Telegraf(process.env.BOT_TOKEN!);
 
   async onModuleInit() {
+    this.botStartCommand();
+    this.setAzkarInterval();
+    this.stopAzkarBot();
+    this.setBotCommands()
+      .then(() => this.logger.log('Bot Commands Setted'))
+      .catch((error) => this.logger.error('Error setting bot commands', error));
+
     try {
-      await this.initializeBot();
+      this.logger.log('Initializing Azkar Bot...');
+      await this.bot.launch();
+      this.logger.log('Azkar Bot initialized successfully.');
     } catch (error) {
       this.logger.error('Error initializing Bot', error);
       process.exit(1);
     }
-
-    this.logger.log('Azkar Bot initialized successfully.');
-    this.botStartCommand();
-    this.setAzkarInterval();
-    this.stopAzkarBot();
   }
 
   async scheduleUser(userId: number, durationInMs: number) {
@@ -37,23 +41,20 @@ export class AzkarService implements OnModuleInit {
     return this.azkarQueue.removeJobScheduler(userId);
   }
 
-  private initializeBot() {
-    return Promise.all([
-      this.bot.telegram.setMyCommands([
-        {
-          command: 'start',
-          description: 'ابدأ استقبال الأذكار (كل ٣٠ دقيقة بشكل افتراضي)',
-        },
-        {
-          command: 'set',
-          description: 'تغيير الفترة الزمنية بين الأذكار (مثال: set 10/)',
-        },
-        {
-          command: 'stop',
-          description: 'إيقاف إرسال الأذكار',
-        },
-      ]),
-      this.bot.launch(),
+  private setBotCommands() {
+    return this.bot.telegram.setMyCommands([
+      {
+        command: 'start',
+        description: 'ابدأ استقبال الأذكار (كل ٣٠ دقيقة بشكل افتراضي)',
+      },
+      {
+        command: 'set',
+        description: 'تغيير الفترة الزمنية بين الأذكار (مثال: set 10/)',
+      },
+      {
+        command: 'stop',
+        description: 'إيقاف إرسال الأذكار',
+      },
     ]);
   }
 
