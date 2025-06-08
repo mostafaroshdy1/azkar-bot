@@ -1,10 +1,19 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Telegraf } from 'telegraf';
 
 @Injectable()
-export class AzkarService implements OnModuleInit {
+export class AzkarService implements OnModuleInit, OnModuleDestroy {
+  onModuleDestroy() {
+    this.bot.stop();
+  }
+
   constructor(@InjectQueue('azkar') private readonly azkarQueue: Queue) {}
 
   private readonly logger = new Logger(AzkarService.name, { timestamp: true });
@@ -19,14 +28,10 @@ export class AzkarService implements OnModuleInit {
       .then(() => this.logger.log('Bot Commands Setted'))
       .catch((error) => this.logger.error('Error setting bot commands', error));
 
-    try {
-      this.logger.log('Initializing Azkar Bot...');
-      await this.bot.launch();
-      this.logger.log('Azkar Bot initialized successfully.');
-    } catch (error) {
-      this.logger.error('Error initializing Bot', error);
-      process.exit(1);
-    }
+    this.bot
+      .launch()
+      .then(() => this.logger.log('Azkar Bot is running'))
+      .catch((error) => this.logger.error('Error launching Azkar Bot', error));
   }
 
   async scheduleUser(userId: number, durationInMs: number) {
