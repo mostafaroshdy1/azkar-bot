@@ -12,7 +12,14 @@ export class AzkarService implements OnModuleInit {
   public readonly bot: Telegraf = new Telegraf(process.env.BOT_TOKEN!);
 
   async onModuleInit() {
-    this.initializeBot();
+    try {
+      await this.initializeBot();
+    } catch (error) {
+      this.logger.error('Error initializing Bot', error);
+      process.exit(1);
+    }
+
+    this.logger.log('Azkar Bot initialized successfully.');
     this.botStartCommand();
     this.setAzkarInterval();
     this.stopAzkarBot();
@@ -31,8 +38,8 @@ export class AzkarService implements OnModuleInit {
   }
 
   private initializeBot() {
-    this.bot.telegram
-      .setMyCommands([
+    return Promise.all([
+      this.bot.telegram.setMyCommands([
         {
           command: 'start',
           description: 'ابدأ استقبال الأذكار (كل ٣٠ دقيقة بشكل افتراضي)',
@@ -45,14 +52,9 @@ export class AzkarService implements OnModuleInit {
           command: 'stop',
           description: 'إيقاف إرسال الأذكار',
         },
-      ])
-      .then(() => this.logger.log('Commands set successfully'))
-      .catch((err) => this.logger.error('Error setting commands', err));
-
-    this.bot
-      .launch()
-      .then(() => this.logger.log('Bot launched successfully'))
-      .catch((err) => this.logger.error('Error launching bot', err));
+      ]),
+      this.bot.launch(),
+    ]);
   }
 
   private botStartCommand() {
