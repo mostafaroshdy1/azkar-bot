@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'azkar-bot',
-      script: 'index.ts',
-      cwd: '~/apps/azkar-bot',
+      script: '/home/mostafaroshdy1/apps/azkar-bot/dist/main.js',
+      cwd: '/home/mostafaroshdy1/apps/azkar-bot',
       env: {
         NODE_ENV: 'production',
       },
