@@ -29,7 +29,9 @@ export class AzkarService implements OnModuleInit, OnModuleDestroy {
       .catch((error) => this.logger.error('Error setting bot commands', error));
 
     this.bot
-      .launch()
+      .launch({
+        allowedUpdates: ['message'],
+      })
       .then(() => this.logger.log('Azkar Bot is running'))
       .catch((error) => this.logger.error('Error launching Azkar Bot', error));
   }
