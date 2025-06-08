@@ -35,6 +35,9 @@ export class AzkarProcessor extends WorkerHost {
 
       if (error?.response?.error_code === 403) {
         await this.azkarService.cancelUserSchedule(userId);
+        this.logger.log(
+          `User with ID ${userId} has blocked the bot or left the chat. Schedule cancelled.`,
+        );
       }
     }
   }
