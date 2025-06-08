@@ -1,4 +1,4 @@
-# Azkar Bot
+# [Azkar Bot](https://t.me/azkar_dailybot)
 
 Azkar Bot is a high-concurrency Telegram bot designed to deliver Islamic Azkar (remembrances) efficiently and reliably.
 
