@@ -4,8 +4,6 @@ module.exports = {
       name: 'azkar-bot',
       script: '/home/mostafaroshdy1/apps/azkar-bot/dist/main.js',
       cwd: '/home/mostafaroshdy1/apps/azkar-bot',
-      exec_mode: 'cluster',
-      instances: 2,
       env: {
         NODE_ENV: 'production',
       },
