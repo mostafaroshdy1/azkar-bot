@@ -12,6 +12,25 @@ export class AzkarService implements OnModuleInit {
   public readonly bot: Telegraf = new Telegraf(process.env.BOT_TOKEN!);
 
   async onModuleInit() {
+    this.initializeBot();
+    this.botStartCommand();
+    this.setAzkarInterval();
+    this.stopAzkarBot();
+  }
+
+  async scheduleUser(userId: number, durationInMs: number) {
+    await this.cancelUserSchedule(`${userId}`);
+    return this.azkarQueue.upsertJobScheduler(`${userId}`, {
+      every: durationInMs,
+      startDate: Date.now() + durationInMs,
+    });
+  }
+
+  cancelUserSchedule(userId: string) {
+    return this.azkarQueue.removeJobScheduler(userId);
+  }
+
+  private initializeBot() {
     this.bot.telegram
       .setMyCommands([
         {
@@ -34,7 +53,9 @@ export class AzkarService implements OnModuleInit {
       .launch()
       .then(() => this.logger.log('Bot launched successfully'))
       .catch((err) => this.logger.error('Error launching bot', err));
+  }
 
+  private botStartCommand() {
     this.bot.start(async (ctx) => {
       const userId = ctx.from?.id;
       const defaultDurationInMs = 1000 * 60 * 30; // 30 minutes in milliseconds
@@ -78,7 +99,9 @@ export class AzkarService implements OnModuleInit {
         );
       }
     });
+  }
 
+  private setAzkarInterval() {
     this.bot.command('set', async (ctx) => {
       const userId = ctx.from?.id;
 
@@ -136,7 +159,9 @@ export class AzkarService implements OnModuleInit {
         }
       }
     });
+  }
 
+  private stopAzkarBot() {
     this.bot.command('stop', async (ctx) => {
       const userId = ctx.from?.id;
 
@@ -147,6 +172,7 @@ export class AzkarService implements OnModuleInit {
 
       try {
         await this.cancelUserSchedule(`${userId}`);
+        this.logger.log(`User ${userId} scheduled cancelled successfully.`);
         try {
           await ctx.reply('🛑 تم إيقاف إرسال الأذكار.');
         } catch (replyError) {
@@ -172,17 +198,5 @@ export class AzkarService implements OnModuleInit {
         }
       }
     });
-  }
-
-  async scheduleUser(userId: number, durationInMs: number) {
-    await this.cancelUserSchedule(`${userId}`);
-    return this.azkarQueue.upsertJobScheduler(`${userId}`, {
-      every: durationInMs,
-      startDate: Date.now() + durationInMs,
-    });
-  }
-
-  cancelUserSchedule(userId: string) {
-    return this.azkarQueue.removeJobScheduler(userId);
   }
 }
