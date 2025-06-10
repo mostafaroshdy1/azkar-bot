@@ -137,6 +137,20 @@ export class AzkarService implements OnModuleInit, OnModuleDestroy {
         return;
       }
 
+      if (minutes > 525600) {
+        try {
+          await ctx.reply(
+            '❌ الحد الأقصى للفترة الزمنية هو 365 يومًا (525600 دقيقة).',
+          );
+        } catch (replyError) {
+          this.logger.error(
+            `Failed to send max duration message to user ${userId}: ${replyError.message}`,
+            replyError.stack,
+          );
+        }
+        return;
+      }
+
       const durationInMs = minutes * 60 * 1000;
 
       try {
